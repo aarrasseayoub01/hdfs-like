@@ -1,0 +1,6 @@
+cmd/server/server.exe
+cmd/server/editlog.json
+cmd/server/fsimage.gob
+
+test/editlog.json
+test/fsimage.gob
