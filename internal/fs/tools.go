@@ -14,7 +14,7 @@ func FindDirectory(root *Directory, path string) *Directory {
 	}
 
 	// Clean up the path and split it into components
-	cleanedPath := filepath.Clean(path)
+	cleanedPath := filepath.Clean(path)[1:]
 	parts := strings.Split(cleanedPath, string(os.PathSeparator))
 
 	// Start from the root directory

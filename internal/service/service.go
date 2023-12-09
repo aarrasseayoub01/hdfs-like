@@ -23,7 +23,6 @@ func NewFileSystemService(root *utils.Directory) *FileSystemService {
 func (fs *FileSystemService) CreateFile(filePath string) error {
 	fs.rootMutex.Lock()
 	defer fs.rootMutex.Unlock()
-
 	dirPath, fileName := filepath.Split(filePath)
 	parentDir := utils.FindDirectory(fs.rootDirectory, dirPath)
 	if parentDir == nil {
@@ -74,7 +73,7 @@ func (fs *FileSystemService) CreateDirectory(dirPath string) error {
 	parentPath, dirName := filepath.Dir(dirPath), filepath.Base(dirPath)
 	parentDir := utils.FindDirectory(fs.rootDirectory, parentPath)
 	if parentDir == nil {
-		return fmt.Errorf(parentPath)
+		return fmt.Errorf("No parent path provided " + parentPath)
 	}
 	if _, exists := parentDir.ChildDirs[dirName]; exists {
 		return fmt.Errorf("directory already exists")

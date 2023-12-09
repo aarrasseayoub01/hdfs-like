@@ -9,13 +9,13 @@ import (
 )
 
 type FileSystemController struct {
-	service *svc.FileSystemService
+	Service *svc.FileSystemService
 }
 
 func NewFileSystemController(rootDir *utils.Directory) *FileSystemController {
 	fileSystemService := svc.NewFileSystemService(rootDir)
 
-	return &FileSystemController{service: fileSystemService}
+	return &FileSystemController{Service: fileSystemService}
 }
 
 func (c *FileSystemController) CreateFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +27,7 @@ func (c *FileSystemController) CreateFileHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	err := c.service.CreateFile(request.FilePath)
+	err := c.Service.CreateFile(request.FilePath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -45,7 +45,7 @@ func (c *FileSystemController) DeleteFileHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	err := c.service.DeleteFile(request.FilePath)
+	err := c.Service.DeleteFile(request.FilePath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -63,7 +63,7 @@ func (c *FileSystemController) CreateDirectoryHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	err := c.service.CreateDirectory(request.DirPath)
+	err := c.Service.CreateDirectory(request.DirPath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -81,7 +81,7 @@ func (c *FileSystemController) DeleteDirectoryHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	err := c.service.DeleteDirectory(request.DirPath)
+	err := c.Service.DeleteDirectory(request.DirPath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
