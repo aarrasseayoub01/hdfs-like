@@ -4,3 +4,5 @@ cmd/server/fsimage.gob
 
 test/editlog.json
 test/fsimage.gob
+
+hdfs_cli/target
