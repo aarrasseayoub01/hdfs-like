@@ -19,22 +19,6 @@ func NewFileSystemService(root *utils.Directory) *FileSystemService {
 	return &FileSystemService{rootDirectory: root}
 }
 
-// ReadFile reads a file in the file system.
-func (fs *FileSystemService) ReadFile(filePath string) (*utils.Inode, error) {
-	fs.rootMutex.Lock()
-	defer fs.rootMutex.Unlock()
-	dirPath, fileName := filepath.Split(filePath)
-	parentDir := utils.FindDirectory(fs.rootDirectory, dirPath)
-	if parentDir == nil {
-		return nil, fmt.Errorf("parent directory does not exist")
-	}
-	if _, exists := parentDir.ChildFiles[fileName]; !exists {
-		return nil, fmt.Errorf("file doesn't exists")
-	}
-
-	return parentDir.ChildFiles[fileName], nil
-}
-
 // CreateFile creates a new file in the file system.
 func (fs *FileSystemService) CreateFile(filePath string) error {
 	fs.rootMutex.Lock()
@@ -59,6 +43,22 @@ func (fs *FileSystemService) CreateFile(filePath string) error {
 	persistence.RecordEditLog("CREATE_FILE", filePath, newFileInode)
 
 	return nil
+}
+
+// ReadFile reads a file in the file system.
+func (fs *FileSystemService) ReadFile(filePath string) (*utils.Inode, error) {
+	fs.rootMutex.Lock()
+	defer fs.rootMutex.Unlock()
+	dirPath, fileName := filepath.Split(filePath)
+	parentDir := utils.FindDirectory(fs.rootDirectory, dirPath)
+	if parentDir == nil {
+		return nil, fmt.Errorf("parent directory does not exist")
+	}
+	if _, exists := parentDir.ChildFiles[fileName]; !exists {
+		return nil, fmt.Errorf("file doesn't exists")
+	}
+
+	return parentDir.ChildFiles[fileName], nil
 }
 
 // DeleteFile deletes a file from the file system.
@@ -110,6 +110,39 @@ func (fs *FileSystemService) CreateDirectory(dirPath string) error {
 	persistence.RecordEditLog("CREATE_DIRECTORY", dirPath, newDirInode)
 
 	return nil
+}
+
+func (fs *FileSystemService) ReadDirectory(dirPath string) ([]*utils.Inode, error) {
+	fs.rootMutex.Lock()
+	defer fs.rootMutex.Unlock()
+
+	parentPath, dirName := filepath.Dir(dirPath), filepath.Base(dirPath)
+
+	// Find the parent directory
+	parentDir := utils.FindDirectory(fs.rootDirectory, parentPath)
+	if parentDir == nil {
+		return nil, fmt.Errorf("no parent path provided: %s", parentPath)
+	}
+
+	// Check if the directory exists
+	dir, exists := parentDir.ChildDirs[dirName]
+	if !exists {
+		return nil, fmt.Errorf("directory does not exist: %s", dirPath)
+	}
+
+	// Read child files and directories
+	childFiles := make([]*utils.Inode, 0, len(dir.ChildFiles))
+	for _, inode := range dir.ChildFiles {
+		childFiles = append(childFiles, inode)
+	}
+
+	childDirs := make([]*utils.Inode, 0, len(dir.ChildDirs))
+	for _, dir := range dir.ChildDirs {
+		childDirs = append(childDirs, dir.Inode)
+	}
+	childFiles = append(childFiles, childDirs...)
+
+	return childFiles, nil
 }
 
 // DeleteDirectory deletes a directory from the file system.

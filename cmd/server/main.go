@@ -20,10 +20,11 @@ func main() {
 	r := mux.NewRouter()
 
 	// Define the routes
-	r.HandleFunc("/readFile", controller.ReadFileHandler).Methods("GET")
 	r.HandleFunc("/createFile", controller.CreateFileHandler).Methods("POST")
+	r.HandleFunc("/readFile", controller.ReadFileHandler).Methods("GET")
 	r.HandleFunc("/deleteFile", controller.DeleteFileHandler).Methods("DELETE")
 	r.HandleFunc("/createDir", controller.CreateDirectoryHandler).Methods("POST")
+	r.HandleFunc("/readDir", controller.ReadDirectoryHandler).Methods("GET")
 	r.HandleFunc("/deleteDir", controller.DeleteDirectoryHandler).Methods("DELETE")
 
 	// Start the server
