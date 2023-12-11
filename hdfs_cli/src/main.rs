@@ -1,5 +1,5 @@
 use clap::{App, Arg, SubCommand};
-use prettytable::{format, row, Table};
+use prettytable::{color, row, Attr, Cell, Row, Table};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -135,8 +135,6 @@ async fn handle_read_subcommand(read_matches: &clap::ArgMatches, client: &Client
 
 fn print_file_data_table(files: &[FileData]) {
     let mut table = Table::new();
-    // Set the format with separate lines for each row and column
-    // table.set_format(*format::consts::FORMAT_BORDERS_ONLY);
 
     // Add a header row
     table.add_row(row!["ID", "Name", "Type", "Size", "Blocks", "Timestamp"]);
@@ -151,15 +149,22 @@ fn print_file_data_table(files: &[FileData]) {
             None => "None".to_string(),
         };
 
+        // Color the name if it's a directory
+        let name_cell = if file.is_dir {
+            Cell::new(&file.name).with_style(Attr::ForegroundColor(color::BLUE))
+        } else {
+            Cell::new(&file.name)
+        };
+
         // Add each row to the table
-        table.add_row(row![
-            file.id,
-            file.name,
-            file_type,
-            file.size,
-            blocks_display,
-            file.timestamp
-        ]);
+        table.add_row(Row::new(vec![
+            Cell::new(&file.id.to_string()),
+            name_cell,
+            Cell::new(file_type),
+            Cell::new(&file.size.to_string()),
+            Cell::new(&blocks_display),
+            Cell::new(&file.timestamp),
+        ]));
     }
 
     // Print the table to the console
