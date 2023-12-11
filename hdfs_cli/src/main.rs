@@ -1,4 +1,5 @@
 use clap::{App, Arg, SubCommand};
+use prettytable::{format, row, Table};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -96,7 +97,6 @@ struct FileData {
     #[serde(rename = "Timestamp")]
     timestamp: String,
 }
-
 async fn handle_read_subcommand(read_matches: &clap::ArgMatches, client: &Client, base_url: &str) {
     let path = read_matches
         .value_of("path")
@@ -117,9 +117,51 @@ async fn handle_read_subcommand(read_matches: &clap::ArgMatches, client: &Client
 
     let response_text = response.text().await.expect("Failed to read response");
 
-    // Parse the response text into the FileData struct
-    let file_data: FileData = serde_json::from_str(&response_text).expect("Failed to parse JSON");
+    if read_matches.is_present("directory") {
+        let files: Vec<FileData> = serde_json::from_str(&response_text)
+            .expect("Failed to parse JSON as a list of FileData");
 
-    // Print the parsed data
-    println!("Parsed Response: {:?}", file_data);
+        // Use the new method to print the file data
+        print_file_data_table(&files);
+    } else {
+        // Parse the response as a single FileData
+        let file_data: FileData =
+            serde_json::from_str(&response_text).expect("Failed to parse JSON as FileData");
+
+        // Print the file data
+        println!("Parsed Response: {:?}", file_data);
+    }
+}
+
+fn print_file_data_table(files: &[FileData]) {
+    let mut table = Table::new();
+    // Set the format with separate lines for each row and column
+    // table.set_format(*format::consts::FORMAT_BORDERS_ONLY);
+
+    // Add a header row
+    table.add_row(row!["ID", "Name", "Type", "Size", "Blocks", "Timestamp"]);
+
+    for file in files {
+        // Determine file type
+        let file_type = if file.is_dir { "Dir" } else { "File" };
+
+        // Display blocks if available
+        let blocks_display = match &file.blocks {
+            Some(blocks) => format!("{:?}", blocks),
+            None => "None".to_string(),
+        };
+
+        // Add each row to the table
+        table.add_row(row![
+            file.id,
+            file.name,
+            file_type,
+            file.size,
+            blocks_display,
+            file.timestamp
+        ]);
+    }
+
+    // Print the table to the console
+    table.printstd();
 }
