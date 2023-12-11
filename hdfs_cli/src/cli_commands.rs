@@ -38,7 +38,7 @@ pub async fn handle_create_subcommand(
     create_matches: &ArgMatches,
     client: &Client,
     base_url: &str,
-) {
+) -> Result<(), reqwest::Error> {
     let path = create_matches
         .value_of("path")
         .expect("Required argument missing: path");
@@ -52,19 +52,25 @@ pub async fn handle_create_subcommand(
     let post_body = json!({ key: path });
 
     let url = format!("{}/{}", base_url, endpoint);
-    let response = client
-        .post(&url)
-        .json(&post_body)
-        .send()
-        .await
-        .expect("Failed to send request");
-    println!(
-        "Response: {:?}",
-        response.text().await.expect("Failed to read response")
-    );
+    match client.post(&url).json(&post_body).send().await {
+        Ok(res) => res,
+        Err(e) => {
+            if e.is_timeout() {
+                println!("Request timed out. Please try again.");
+            } else {
+                println!("An error occurred: {}", e);
+            }
+            return Err(e);
+        }
+    };
+    Ok(())
 }
 
-pub async fn handle_read_subcommand(read_matches: &ArgMatches, client: &Client, base_url: &str) {
+pub async fn handle_read_subcommand(
+    read_matches: &ArgMatches,
+    client: &Client,
+    base_url: &str,
+) -> Result<(), reqwest::Error> {
     let path = read_matches
         .value_of("path")
         .expect("Required argument missing: path");
@@ -76,11 +82,17 @@ pub async fn handle_read_subcommand(read_matches: &ArgMatches, client: &Client, 
     };
 
     let url = format!("{}/{}?{}={}", base_url, endpoint, key, path);
-    let response = client
-        .get(&url)
-        .send()
-        .await
-        .expect("Failed to send request");
+    let response = match client.get(&url).send().await {
+        Ok(res) => res,
+        Err(e) => {
+            if e.is_timeout() {
+                println!("Request timed out. Please try again.");
+            } else {
+                println!("An error occurred: {}", e);
+            }
+            return Err(e);
+        }
+    };
 
     let response_text = response.text().await.expect("Failed to read response");
 
@@ -95,6 +107,7 @@ pub async fn handle_read_subcommand(read_matches: &ArgMatches, client: &Client, 
 
         println!("Parsed Response: {:?}", file_data);
     }
+    Ok(())
 }
 
 fn print_file_data_table(files: &[FileData]) {

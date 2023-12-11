@@ -12,9 +12,9 @@ async fn main() {
     let base_url = "http://localhost:8080";
 
     if let Some(("create", create_matches)) = matches.subcommand() {
-        cli_commands::handle_create_subcommand(create_matches, &client, base_url).await;
+        let _ = cli_commands::handle_create_subcommand(create_matches, &client, base_url).await;
     } else if let Some(("read", read_matches)) = matches.subcommand() {
-        cli_commands::handle_read_subcommand(read_matches, &client, base_url).await;
+        let _ = cli_commands::handle_read_subcommand(read_matches, &client, base_url).await;
     } else {
         println!("Invalid command");
     }
