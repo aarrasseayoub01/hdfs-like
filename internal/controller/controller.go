@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	utils "github.com/aarrasseayoub01/hdfs-mini/internal/fs"
 	svc "github.com/aarrasseayoub01/hdfs-mini/internal/service"
@@ -16,6 +17,25 @@ func NewFileSystemController(rootDir *utils.Directory) *FileSystemController {
 	fileSystemService := svc.NewFileSystemService(rootDir)
 
 	return &FileSystemController{Service: fileSystemService}
+}
+
+func (c *FileSystemController) ReadFileHandler(w http.ResponseWriter, r *http.Request) {
+	// Parse the query from URL
+	query := r.URL.RawQuery
+
+	// Read file
+	fileInode, err := c.Service.ReadFile(strings.Split(query, "=")[1])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send the fileInode as a JSON response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(fileInode); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (c *FileSystemController) CreateFileHandler(w http.ResponseWriter, r *http.Request) {

@@ -19,6 +19,22 @@ func NewFileSystemService(root *utils.Directory) *FileSystemService {
 	return &FileSystemService{rootDirectory: root}
 }
 
+// ReadFile reads a file in the file system.
+func (fs *FileSystemService) ReadFile(filePath string) (*utils.Inode, error) {
+	fs.rootMutex.Lock()
+	defer fs.rootMutex.Unlock()
+	dirPath, fileName := filepath.Split(filePath)
+	parentDir := utils.FindDirectory(fs.rootDirectory, dirPath)
+	if parentDir == nil {
+		return nil, fmt.Errorf("parent directory does not exist")
+	}
+	if _, exists := parentDir.ChildFiles[fileName]; !exists {
+		return nil, fmt.Errorf("file doesn't exists")
+	}
+
+	return parentDir.ChildFiles[fileName], nil
+}
+
 // CreateFile creates a new file in the file system.
 func (fs *FileSystemService) CreateFile(filePath string) error {
 	fs.rootMutex.Lock()
