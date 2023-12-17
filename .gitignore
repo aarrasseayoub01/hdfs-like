@@ -1,8 +1,8 @@
-cmd/server/server.exe
-cmd/server/editlog.json
-cmd/server/fsimage.gob
+hdfs_namenode/cmd/server/editlog.json
+hdfs_namenode/cmd/server/fsimage.gob
+hdfs_namenode/cmd/server/server.exe
 
-test/editlog.json
-test/fsimage.gob
+hdfs_namenode/test/editlog.json
+hdfs_namenode/test/fsimage.gob
 
 hdfs_cli/target
