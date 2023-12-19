@@ -1,12 +1,14 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"sync"
 	"time"
 
 	utils "github.com/aarrasseayoub01/namenode/namenode/internal/fs"
+	"github.com/aarrasseayoub01/namenode/namenode/internal/gRPC"
 	"github.com/aarrasseayoub01/namenode/namenode/internal/persistence"
 )
 
@@ -166,31 +168,39 @@ func (fs *FileSystemService) DeleteDirectory(dirPath string) error {
 	return nil
 }
 
-func (fs *FileSystemService) AllocateFileBlocks(filePath string, fileSize int64) ([]utils.BlockAssignment, error) {
+func (fs *FileSystemService) AllocateFileBlocks(filePath string, fileSize int64) (*utils.AllocateFileBlocksResponse, error) {
 	const blockSize int64 = 64 * 1024 * 1024
 	var blockAssignments []utils.BlockAssignment
 
-	// dataNodeManager := gRPC.GetInstance()
-	// dataNodes := dataNodeManager.GetDataNodes()
-	// Simulate DataNode addresses
-
+	dataNodeManager := gRPC.GetInstance()
+	dataNodes := dataNodeManager.GetDataNodes()
 	// Calculate the number of blocks needed
 	numBlocks := fileSize / blockSize
 	if fileSize%blockSize != 0 {
 		numBlocks++
 	}
 
+	// Prepare a slice of DataNode addresses for round-robin allocation
+	dataNodeAddresses := make([]string, 0, len(dataNodes))
+
+	if len(dataNodes) == 0 {
+		return nil, errors.New("There are no DataNodes")
+	}
+	for address := range dataNodes {
+		dataNodeAddresses = append(dataNodeAddresses, address)
+	}
+
 	// Assign blocks to DataNodes
 	for i := int64(0); i < numBlocks; i++ {
 		blockID := fmt.Sprintf("%s-block-%d", filepath.Base(filePath), i)
-		// dataNodeIndex := i % int64(len(dataNodes)) // Simple round-robin allocation
+		dataNodeIndex := i % int64(len(dataNodeAddresses)) // Round-robin allocation
 
 		blockAssignments = append(blockAssignments, utils.BlockAssignment{
-			BlockID: blockID,
-			// DataNodeAddresses: []string{dataNodes[dataNodeIndex].Address},
+			BlockID:           blockID,
+			DataNodeAddresses: []string{dataNodeAddresses[dataNodeIndex]},
 		})
 	}
 
-	// return utils.AllocateFileBlocksResponse{BlockAssignments: blockAssignments}, nil
-	return nil, nil
+	return &utils.AllocateFileBlocksResponse{BlockAssignments: blockAssignments}, nil
+
 }
