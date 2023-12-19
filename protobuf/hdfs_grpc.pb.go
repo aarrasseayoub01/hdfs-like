@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	NameNodeService_RegisterDataNode_FullMethodName = "/hdfs.NameNodeService/RegisterDataNode"
+	NameNodeService_SendHeartbeat_FullMethodName    = "/hdfs.NameNodeService/SendHeartbeat"
 )
 
 // NameNodeServiceClient is the client API for NameNodeService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NameNodeServiceClient interface {
 	RegisterDataNode(ctx context.Context, in *RegisterDataNodeRequest, opts ...grpc.CallOption) (*RegisterDataNodeResponse, error)
+	SendHeartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error)
 }
 
 type nameNodeServiceClient struct {
@@ -46,11 +48,21 @@ func (c *nameNodeServiceClient) RegisterDataNode(ctx context.Context, in *Regist
 	return out, nil
 }
 
+func (c *nameNodeServiceClient) SendHeartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error) {
+	out := new(HeartbeatResponse)
+	err := c.cc.Invoke(ctx, NameNodeService_SendHeartbeat_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NameNodeServiceServer is the server API for NameNodeService service.
 // All implementations must embed UnimplementedNameNodeServiceServer
 // for forward compatibility
 type NameNodeServiceServer interface {
 	RegisterDataNode(context.Context, *RegisterDataNodeRequest) (*RegisterDataNodeResponse, error)
+	SendHeartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error)
 	mustEmbedUnimplementedNameNodeServiceServer()
 }
 
@@ -60,6 +72,9 @@ type UnimplementedNameNodeServiceServer struct {
 
 func (UnimplementedNameNodeServiceServer) RegisterDataNode(context.Context, *RegisterDataNodeRequest) (*RegisterDataNodeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterDataNode not implemented")
+}
+func (UnimplementedNameNodeServiceServer) SendHeartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendHeartbeat not implemented")
 }
 func (UnimplementedNameNodeServiceServer) mustEmbedUnimplementedNameNodeServiceServer() {}
 
@@ -92,6 +107,24 @@ func _NameNodeService_RegisterDataNode_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NameNodeService_SendHeartbeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HeartbeatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NameNodeServiceServer).SendHeartbeat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NameNodeService_SendHeartbeat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NameNodeServiceServer).SendHeartbeat(ctx, req.(*HeartbeatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NameNodeService_ServiceDesc is the grpc.ServiceDesc for NameNodeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -103,13 +136,18 @@ var NameNodeService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "RegisterDataNode",
 			Handler:    _NameNodeService_RegisterDataNode_Handler,
 		},
+		{
+			MethodName: "SendHeartbeat",
+			Handler:    _NameNodeService_SendHeartbeat_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "hdfs.proto",
 }
 
 const (
-	DataNodeService_StoreBlock_FullMethodName = "/hdfs.DataNodeService/StoreBlock"
+	DataNodeService_StoreBlock_FullMethodName    = "/hdfs.DataNodeService/StoreBlock"
+	DataNodeService_RetrieveBlock_FullMethodName = "/hdfs.DataNodeService/RetrieveBlock"
 )
 
 // DataNodeServiceClient is the client API for DataNodeService service.
@@ -117,6 +155,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DataNodeServiceClient interface {
 	StoreBlock(ctx context.Context, in *StoreBlockRequest, opts ...grpc.CallOption) (*StoreBlockResponse, error)
+	RetrieveBlock(ctx context.Context, in *RetrieveBlockRequest, opts ...grpc.CallOption) (*RetrieveBlockResponse, error)
 }
 
 type dataNodeServiceClient struct {
@@ -136,11 +175,21 @@ func (c *dataNodeServiceClient) StoreBlock(ctx context.Context, in *StoreBlockRe
 	return out, nil
 }
 
+func (c *dataNodeServiceClient) RetrieveBlock(ctx context.Context, in *RetrieveBlockRequest, opts ...grpc.CallOption) (*RetrieveBlockResponse, error) {
+	out := new(RetrieveBlockResponse)
+	err := c.cc.Invoke(ctx, DataNodeService_RetrieveBlock_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DataNodeServiceServer is the server API for DataNodeService service.
 // All implementations must embed UnimplementedDataNodeServiceServer
 // for forward compatibility
 type DataNodeServiceServer interface {
 	StoreBlock(context.Context, *StoreBlockRequest) (*StoreBlockResponse, error)
+	RetrieveBlock(context.Context, *RetrieveBlockRequest) (*RetrieveBlockResponse, error)
 	mustEmbedUnimplementedDataNodeServiceServer()
 }
 
@@ -150,6 +199,9 @@ type UnimplementedDataNodeServiceServer struct {
 
 func (UnimplementedDataNodeServiceServer) StoreBlock(context.Context, *StoreBlockRequest) (*StoreBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreBlock not implemented")
+}
+func (UnimplementedDataNodeServiceServer) RetrieveBlock(context.Context, *RetrieveBlockRequest) (*RetrieveBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RetrieveBlock not implemented")
 }
 func (UnimplementedDataNodeServiceServer) mustEmbedUnimplementedDataNodeServiceServer() {}
 
@@ -182,6 +234,24 @@ func _DataNodeService_StoreBlock_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DataNodeService_RetrieveBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RetrieveBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataNodeServiceServer).RetrieveBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DataNodeService_RetrieveBlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataNodeServiceServer).RetrieveBlock(ctx, req.(*RetrieveBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DataNodeService_ServiceDesc is the grpc.ServiceDesc for DataNodeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -192,6 +262,10 @@ var DataNodeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreBlock",
 			Handler:    _DataNodeService_StoreBlock_Handler,
+		},
+		{
+			MethodName: "RetrieveBlock",
+			Handler:    _DataNodeService_RetrieveBlock_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

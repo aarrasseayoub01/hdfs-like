@@ -4,14 +4,19 @@ package hdfs;
 
 option go_package = "github.com/aarrasseayoub01/datanode/protobuf"; 
 
+// The NameNode service definition.
 service NameNodeService {
   rpc RegisterDataNode(RegisterDataNodeRequest) returns (RegisterDataNodeResponse) {}
+  rpc SendHeartbeat(HeartbeatRequest) returns (HeartbeatResponse) {} // New method for heartbeats
 }
 
+// The DataNode service definition.
 service DataNodeService {
   rpc StoreBlock(StoreBlockRequest) returns (StoreBlockResponse) {}
+  rpc RetrieveBlock(RetrieveBlockRequest) returns (RetrieveBlockResponse) {} // New method for retrieving a block
 }
 
+// Request and Response messages for NameNodeService
 message RegisterDataNodeRequest {
   string datanode_address = 1;
 }
@@ -20,6 +25,15 @@ message RegisterDataNodeResponse {
   bool success = 1;
 }
 
+message HeartbeatRequest {
+  string datanode_id = 1; // Identifier for the DataNode
+}
+
+message HeartbeatResponse {
+  bool success = 1;
+}
+
+// Request and Response messages for DataNodeService
 message StoreBlockRequest {
   string block_id = 1;
   bytes block_data = 2;
@@ -27,4 +41,13 @@ message StoreBlockRequest {
 
 message StoreBlockResponse {
   bool success = 1;
+}
+
+message RetrieveBlockRequest {
+  string block_id = 1;
+}
+
+message RetrieveBlockResponse {
+  bool success = 1;
+  bytes block_data = 2; // The data of the block being retrieved
 }
