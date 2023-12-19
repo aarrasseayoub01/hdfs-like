@@ -37,15 +37,15 @@ func (c *DataNodeClient) RegisterWithNameNode() (string, error) {
 		return "", err
 	}
 	log.Printf("Registered with NameNode, assigned ID: %s", response.GetDatanodeId())
-	return response.GetDatanodeId(), nil
+	return dataNodeAddress, nil
 }
 
-func (c *DataNodeClient) SendHeartbeat(datanodeID string) error {
+func (c *DataNodeClient) SendHeartbeat(datanodeAddress string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	// Sending a HeartbeatRequest to the NameNode
-	response, err := c.client.SendHeartbeat(ctx, &protobuf.HeartbeatRequest{DatanodeId: datanodeID})
+	response, err := c.client.SendHeartbeat(ctx, &protobuf.HeartbeatRequest{DatanodeAddress: datanodeAddress})
 	if err != nil {
 		return err
 	}
