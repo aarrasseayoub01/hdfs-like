@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package hdfs;
+
+option go_package = "github.com/aarrasseayoub01/datanode/protobuf"; 
+
+service NameNodeService {
+  rpc RegisterDataNode(RegisterDataNodeRequest) returns (RegisterDataNodeResponse) {}
+}
+
+service DataNodeService {
+  rpc StoreBlock(StoreBlockRequest) returns (StoreBlockResponse) {}
+}
+
+message RegisterDataNodeRequest {
+  string datanode_address = 1;
+}
+
+message RegisterDataNodeResponse {
+  bool success = 1;
+}
+
+message StoreBlockRequest {
+  string block_id = 1;
+  bytes block_data = 2;
+}
+
+message StoreBlockResponse {
+  bool success = 1;
+}
