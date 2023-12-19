@@ -1,4 +1,4 @@
-package grpc
+package gRPC
 
 import (
 	"context"
@@ -26,17 +26,28 @@ func NewDataNodeClient(nameNodeAddress string) (*DataNodeClient, error) {
 	return &DataNodeClient{conn: conn, client: client}, nil
 }
 
-// RegisterWithNameNode registers the DataNode with the NameNode
-func (c *DataNodeClient) RegisterWithNameNode() error {
+func (c *DataNodeClient) RegisterWithNameNode() (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	// Example: Sending a RegisterDataNodeRequest to the NameNode
 	response, err := c.client.RegisterDataNode(ctx, &protobuf.RegisterDataNodeRequest{DatanodeAddress: "datanode_address"})
+	if err != nil {
+		return "", err
+	}
+	log.Printf("Registered with NameNode, assigned ID: %s", response.GetDatanodeId())
+	return response.GetDatanodeId(), nil
+}
+
+func (c *DataNodeClient) SendHeartbeat(datanodeID string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	// Sending a HeartbeatRequest to the NameNode
+	response, err := c.client.SendHeartbeat(ctx, &protobuf.HeartbeatRequest{DatanodeId: datanodeID})
 	if err != nil {
 		return err
 	}
-	log.Printf("Registration response from NameNode: %v", response.GetSuccess())
+	log.Printf("Heartbeat response from NameNode: %v", response.GetSuccess())
 	return nil
 }
 

@@ -23,6 +23,7 @@ message RegisterDataNodeRequest {
 
 message RegisterDataNodeResponse {
   bool success = 1;
+  string datanode_id = 2; // The ID assigned by the NameNode
 }
 
 message HeartbeatRequest {

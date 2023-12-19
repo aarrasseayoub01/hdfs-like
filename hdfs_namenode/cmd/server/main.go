@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/aarrasseayoub01/namenode/namenode/internal/controller"
-	grpc2 "github.com/aarrasseayoub01/namenode/namenode/internal/grpc"
+	grpc2 "github.com/aarrasseayoub01/namenode/namenode/internal/gRPC"
 	"github.com/aarrasseayoub01/namenode/namenode/internal/persistence"
 	"github.com/aarrasseayoub01/namenode/protobuf"
 )
