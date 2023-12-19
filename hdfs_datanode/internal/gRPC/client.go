@@ -3,6 +3,7 @@ package gRPC
 import (
 	"context"
 	"log"
+	"net"
 	"time"
 
 	"github.com/aarrasseayoub01/namenode/protobuf" // Adjust this import path to where your protobuf definitions are.
@@ -29,8 +30,9 @@ func NewDataNodeClient(nameNodeAddress string) (*DataNodeClient, error) {
 func (c *DataNodeClient) RegisterWithNameNode() (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+	dataNodeAddress := getLocalIPAddress()
 
-	response, err := c.client.RegisterDataNode(ctx, &protobuf.RegisterDataNodeRequest{DatanodeAddress: "datanode_address"})
+	response, err := c.client.RegisterDataNode(ctx, &protobuf.RegisterDataNodeRequest{DatanodeAddress: dataNodeAddress})
 	if err != nil {
 		return "", err
 	}
@@ -54,4 +56,20 @@ func (c *DataNodeClient) SendHeartbeat(datanodeID string) error {
 // Close closes the client connection
 func (c *DataNodeClient) Close() {
 	c.conn.Close()
+}
+
+func getLocalIPAddress() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		log.Fatalf("Failed to get IP addresses: %v", err)
+	}
+
+	for _, addr := range addrs {
+		if ipNet, ok := addr.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
+			if ipNet.IP.To4() != nil {
+				return ipNet.IP.String()
+			}
+		}
+	}
+	return ""
 }

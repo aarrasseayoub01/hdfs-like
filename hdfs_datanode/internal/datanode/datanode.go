@@ -1,7 +1,6 @@
 package datanode
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"time"
@@ -35,10 +34,9 @@ func NewDataNode(cfg *config.Config) (*DataNode, error) {
 func (dn *DataNode) Start() error {
 
 	// Start the DataNode functionality
-	err := dn.startGRPCclient()
-	if err != nil {
-		return fmt.Errorf("failed to start gRPC client: %v", err)
-	}
+	go dn.startGRPCclient()
+
+	startGRPCserver()
 
 	log.Printf("Starting DataNode on %s", dn.config.DataNodeAddress)
 	// Add more startup logic here
@@ -74,7 +72,7 @@ func (dn *DataNode) startGRPCclient() error {
 }
 
 func startGRPCserver() {
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", ":50052")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

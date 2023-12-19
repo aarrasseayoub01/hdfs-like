@@ -37,18 +37,21 @@ func (s *NameNodeServer) RegisterDataNode(ctx context.Context, req *protobuf.Reg
 	address := req.GetDatanodeAddress()
 	log.Printf("Registering DataNode with address: %s", address)
 
-	if _, exists := s.dataNodes[address]; !exists {
-		datanodeID := uuid.New().String() // Generate a unique ID
-		s.dataNodes[datanodeID] = &DataNode{
+	id := uuid.New().String()
+	var datanodeID string
+	if existingNode, exists := s.dataNodes[address]; !exists {
+		datanodeID = id // Generate a unique ID
+		s.dataNodes[address] = &DataNode{
 			Address: address,
 			ID:      datanodeID,
 		}
 		// Additional initialization for the DataNode struct
 	} else {
+		datanodeID = existingNode.ID
 		// Handle the case where the DataNode is already registered
 	}
 
-	return &protobuf.RegisterDataNodeResponse{Success: true}, nil
+	return &protobuf.RegisterDataNodeResponse{Success: true, DatanodeId: datanodeID}, nil
 }
 
 func (s *NameNodeServer) SendHeartbeat(ctx context.Context, req *protobuf.HeartbeatRequest) (*protobuf.HeartbeatResponse, error) {
