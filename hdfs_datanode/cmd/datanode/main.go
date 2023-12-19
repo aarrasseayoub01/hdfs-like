@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"hdfs-datanode/internal/config"
-	"hdfs-datanode/internal/datanode"
+
+	"github.com/aarrasseayoub01/namenode/datanode/internal/config"
+	"github.com/aarrasseayoub01/namenode/datanode/internal/datanode"
 )
 
 func main() {

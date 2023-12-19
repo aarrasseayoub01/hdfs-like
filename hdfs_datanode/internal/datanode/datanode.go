@@ -1,8 +1,9 @@
 package datanode
 
 import (
-	"hdfs-datanode/internal/config"
 	"log"
+
+	"github.com/aarrasseayoub01/namenode/datanode/internal/config"
 )
 
 type DataNode struct {
