@@ -27,7 +27,7 @@ message RegisterDataNodeResponse {
 }
 
 message HeartbeatRequest {
-  string datanode_id = 1; // Identifier for the DataNode
+  string datanode_address = 1;
 }
 
 message HeartbeatResponse {

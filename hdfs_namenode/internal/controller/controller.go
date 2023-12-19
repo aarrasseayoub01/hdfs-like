@@ -130,22 +130,8 @@ func (c *FileSystemController) DeleteDirectoryHandler(w http.ResponseWriter, r *
 	w.WriteHeader(http.StatusOK)
 }
 
-type AllocateFileBlocksRequest struct {
-	FilePath string `json:"filePath"`
-	FileSize int64  `json:"fileSize"`
-}
-
-type BlockAssignment struct {
-	BlockID           string   `json:"blockId"`
-	DataNodeAddresses []string `json:"datanodeAddresses"`
-}
-
-type AllocateFileBlocksResponse struct {
-	BlockAssignments []BlockAssignment `json:"blockAssignments"`
-}
-
 func (c *FileSystemController) AllocateFileBlocksHandler(w http.ResponseWriter, r *http.Request) {
-	var request AllocateFileBlocksRequest
+	var request utils.AllocateFileBlocksRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -159,7 +145,7 @@ func (c *FileSystemController) AllocateFileBlocksHandler(w http.ResponseWriter, 
 	}
 
 	// Respond with the block assignments
-	response := AllocateFileBlocksResponse{BlockAssignments: blockAssignments}
+	response := utils.AllocateFileBlocksResponse{BlockAssignments: blockAssignments}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(response); err != nil {

@@ -165,3 +165,32 @@ func (fs *FileSystemService) DeleteDirectory(dirPath string) error {
 
 	return nil
 }
+
+func (fs *FileSystemService) AllocateFileBlocks(filePath string, fileSize int64) ([]utils.BlockAssignment, error) {
+	const blockSize int64 = 64 * 1024 * 1024
+	var blockAssignments []utils.BlockAssignment
+
+	// dataNodeManager := gRPC.GetInstance()
+	// dataNodes := dataNodeManager.GetDataNodes()
+	// Simulate DataNode addresses
+
+	// Calculate the number of blocks needed
+	numBlocks := fileSize / blockSize
+	if fileSize%blockSize != 0 {
+		numBlocks++
+	}
+
+	// Assign blocks to DataNodes
+	for i := int64(0); i < numBlocks; i++ {
+		blockID := fmt.Sprintf("%s-block-%d", filepath.Base(filePath), i)
+		// dataNodeIndex := i % int64(len(dataNodes)) // Simple round-robin allocation
+
+		blockAssignments = append(blockAssignments, utils.BlockAssignment{
+			BlockID: blockID,
+			// DataNodeAddresses: []string{dataNodes[dataNodeIndex].Address},
+		})
+	}
+
+	// return utils.AllocateFileBlocksResponse{BlockAssignments: blockAssignments}, nil
+	return nil, nil
+}

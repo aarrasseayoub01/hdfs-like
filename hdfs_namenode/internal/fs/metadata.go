@@ -27,3 +27,17 @@ type Block struct {
 	Offset int64
 	Size   int64
 }
+
+type BlockAssignment struct {
+	BlockID           string   `json:"blockId"`
+	DataNodeAddresses []string `json:"datanodeAddresses"`
+}
+
+type AllocateFileBlocksResponse struct {
+	BlockAssignments []BlockAssignment `json:"blockAssignments"`
+}
+
+type AllocateFileBlocksRequest struct {
+	FilePath string `json:"filePath"`
+	FileSize int64  `json:"fileSize"`
+}
