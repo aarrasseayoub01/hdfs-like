@@ -51,7 +51,7 @@ func startGRPCserver() {
 	}
 
 	grpcServer := grpc.NewServer()
-	protobuf.RegisterNameNodeServiceServer(grpcServer, grpc2.NewNameNodeServer()) // Use the NewNameNodeServer function
+	protobuf.RegisterNameNodeServiceServer(grpcServer, grpc2.NewNameNodeServer())
 	log.Println("Starting gRPC server on :50051")
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %s", err)

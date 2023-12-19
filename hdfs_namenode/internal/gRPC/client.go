@@ -9,37 +9,40 @@ import (
 	"google.golang.org/grpc"
 )
 
-// DataNodeClient is a client for interacting with the NameNode gRPC service
-type DataNodeClient struct {
+// NameNodeClient is a client for interacting with the DataNode gRPC service
+type NameNodeClient struct {
 	conn   *grpc.ClientConn
-	client protobuf.NameNodeServiceClient
+	client protobuf.DataNodeServiceClient
 }
 
-// NewDataNodeClient creates a new client for the NameNode service
-func NewDataNodeClient(nameNodeAddress string) (*DataNodeClient, error) {
-	conn, err := grpc.Dial(nameNodeAddress, grpc.WithInsecure(), grpc.WithBlock())
+// NewNameNodeClient creates a new client for the DataNode service
+func NewNameNodeClient(dataNodeAddress string) (*NameNodeClient, error) {
+	conn, err := grpc.Dial(dataNodeAddress, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		return nil, err
 	}
-	client := protobuf.NewNameNodeServiceClient(conn)
-	return &DataNodeClient{conn: conn, client: client}, nil
+	client := protobuf.NewDataNodeServiceClient(conn)
+	return &NameNodeClient{conn: conn, client: client}, nil
 }
 
-// RegisterWithNameNode registers the DataNode with the NameNode
-func (c *DataNodeClient) RegisterWithNameNode() error {
+// StoreBlock sends a StoreBlock request to a DataNode
+func (c *NameNodeClient) StoreBlock(blockID string, blockData []byte) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	// Example: Sending a RegisterDataNodeRequest to the NameNode
-	response, err := c.client.RegisterDataNode(ctx, &protobuf.RegisterDataNodeRequest{DatanodeAddress: "datanode_address"})
+	// Example: Sending a StoreBlockRequest to the DataNode
+	response, err := c.client.StoreBlock(ctx, &protobuf.StoreBlockRequest{
+		BlockId:   blockID,
+		BlockData: blockData,
+	})
 	if err != nil {
 		return err
 	}
-	log.Printf("Registration response from NameNode: %v", response.GetSuccess())
+	log.Printf("StoreBlock response from DataNode: %v", response.GetSuccess())
 	return nil
 }
 
 // Close closes the client connection
-func (c *DataNodeClient) Close() {
+func (c *NameNodeClient) Close() {
 	c.conn.Close()
 }
