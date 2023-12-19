@@ -4,7 +4,7 @@ import (
 	"encoding/gob"
 	"os"
 
-	"github.com/aarrasseayoub01/hdfs-mini/internal/fs"
+	"github.com/aarrasseayoub01/namenode/namenode/internal/fs"
 )
 
 func saveFsImage(dir *fs.Directory, path string) error {

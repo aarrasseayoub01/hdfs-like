@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	utils "github.com/aarrasseayoub01/hdfs-mini/internal/fs"
-	svc "github.com/aarrasseayoub01/hdfs-mini/internal/service"
+	utils "github.com/aarrasseayoub01/namenode/namenode/internal/fs"
+	svc "github.com/aarrasseayoub01/namenode/namenode/internal/service"
 )
 
 type FileSystemController struct {

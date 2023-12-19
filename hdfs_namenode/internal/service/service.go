@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	utils "github.com/aarrasseayoub01/hdfs-mini/internal/fs"
-	"github.com/aarrasseayoub01/hdfs-mini/internal/persistence"
+	utils "github.com/aarrasseayoub01/namenode/namenode/internal/fs"
+	"github.com/aarrasseayoub01/namenode/namenode/internal/persistence"
 )
 
 type FileSystemService struct {

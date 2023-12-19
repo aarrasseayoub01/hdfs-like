@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/aarrasseayoub01/hdfs-mini/internal/fs"
+	"github.com/aarrasseayoub01/namenode/namenode/internal/fs"
 )
 
 type EditLogEntry struct {
