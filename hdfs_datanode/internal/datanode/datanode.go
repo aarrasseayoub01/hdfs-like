@@ -3,10 +3,15 @@ package datanode
 import (
 	"fmt"
 	"log"
+	"net"
+	"time"
+
+	"google.golang.org/grpc"
 
 	"github.com/aarrasseayoub01/namenode/datanode/internal/config"
 	datamgmt "github.com/aarrasseayoub01/namenode/datanode/internal/datamngnt"
-	"github.com/aarrasseayoub01/namenode/datanode/internal/grpc"
+	gRPC "github.com/aarrasseayoub01/namenode/datanode/internal/gRPC"
+	"github.com/aarrasseayoub01/namenode/protobuf"
 )
 
 type DataNode struct {
@@ -30,7 +35,8 @@ func NewDataNode(cfg *config.Config) (*DataNode, error) {
 func (dn *DataNode) Start() error {
 
 	// Start the DataNode functionality
-	if err := dn.startGRPCclient(); err != nil {
+	err := dn.startGRPCclient()
+	if err != nil {
 		return fmt.Errorf("failed to start gRPC client: %v", err)
 	}
 
@@ -41,17 +47,42 @@ func (dn *DataNode) Start() error {
 
 func (dn *DataNode) startGRPCclient() error {
 	nameNodeAddress := "localhost:50051" // Adjust the address of the NameNode
-	client, err := grpc.NewDataNodeClient(nameNodeAddress)
+	client, err := gRPC.NewDataNodeClient(nameNodeAddress)
 	if err != nil {
 		log.Fatalf("Failed to create DataNode client: %v", err)
 		return err
 	}
 	defer client.Close()
 
-	// Example: Register with NameNode
-	if err := client.RegisterWithNameNode(); err != nil {
+	dataNodeID, err := client.RegisterWithNameNode()
+	if err != nil {
 		log.Fatalf("Failed to register with NameNode: %v", err)
-		return err
 	}
+
+	go func(id string) {
+		ticker := time.NewTicker(30 * time.Second) // Adjust the interval as needed
+		for range ticker.C {
+			err := client.SendHeartbeat(id) // Use a unique identifier for the DataNode
+			if err != nil {
+				log.Printf("Error sending heartbeat: %v", err)
+				// Handle error, maybe with a retry mechanism
+			}
+		}
+	}(dataNodeID)
+
 	return nil
+}
+
+func startGRPCserver() {
+	lis, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	protobuf.RegisterNameNodeServiceServer(grpcServer, gRPC.NewDataNodeServer())
+	log.Println("Starting gRPC server on :50051")
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %s", err)
+	}
 }
