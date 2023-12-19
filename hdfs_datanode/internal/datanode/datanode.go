@@ -59,6 +59,13 @@ func (dn *DataNode) startGRPCclient() error {
 
 	go func(id string) {
 		ticker := time.NewTicker(30 * time.Second) // Adjust the interval as needed
+		nameNodeAddress := "localhost:50051"       // Adjust the address of the NameNode
+		client, err := gRPC.NewDataNodeClient(nameNodeAddress)
+		if err != nil {
+			log.Fatalf("Failed to create DataNode client: %v", err)
+		}
+		defer client.Close()
+
 		for range ticker.C {
 			err := client.SendHeartbeat(id) // Use a unique identifier for the DataNode
 			if err != nil {

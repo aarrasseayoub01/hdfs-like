@@ -129,3 +129,40 @@ func (c *FileSystemController) DeleteDirectoryHandler(w http.ResponseWriter, r *
 
 	w.WriteHeader(http.StatusOK)
 }
+
+type AllocateFileBlocksRequest struct {
+	FilePath string `json:"filePath"`
+	FileSize int64  `json:"fileSize"`
+}
+
+type BlockAssignment struct {
+	BlockID           string   `json:"blockId"`
+	DataNodeAddresses []string `json:"datanodeAddresses"`
+}
+
+type AllocateFileBlocksResponse struct {
+	BlockAssignments []BlockAssignment `json:"blockAssignments"`
+}
+
+func (c *FileSystemController) AllocateFileBlocksHandler(w http.ResponseWriter, r *http.Request) {
+	var request AllocateFileBlocksRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the service layer to get block assignments
+	blockAssignments, err := c.Service.AllocateFileBlocks(request.FilePath, request.FileSize)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error allocating file blocks: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with the block assignments
+	response := AllocateFileBlocksResponse{BlockAssignments: blockAssignments}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
+	}
+}
