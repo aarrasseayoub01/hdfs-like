@@ -3,6 +3,7 @@ use tokio;
 mod cli_commands;
 mod http_client;
 mod models;
+mod utils;
 
 #[tokio::main]
 async fn main() {

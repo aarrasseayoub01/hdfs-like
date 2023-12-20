@@ -6,6 +6,7 @@ use serde_json::json;
 use crate::models::AllocationResponse;
 // use crate::models::BlockAssignment;
 use crate::models::FileData;
+use crate::utils::process_file_in_blocks;
 
 pub fn build_cli_app() -> App<'static> {
     App::new("Rust CLI for REST Requests")
@@ -85,40 +86,42 @@ pub async fn handle_create_subcommand(
         "Response from {} endpoint: {}",
         endpoint, create_response_text
     );
-
-    let allocate_url = format!("{}/allocate", base_url);
-    let allocate_response = match client
-        .post(&allocate_url)
-        .json(&json!({"filePath": server_path, "fileSize": 40 })) // Use the server_path here as well
-        .send()
-        .await
-    {
-        Ok(res) => res,
-        Err(e) => {
-            if e.is_timeout() {
-                println!("Request timed out. Please try again.");
-            } else {
-                println!("An error occurred: {}", e);
+    if is_directory {
+        let allocate_url = format!("{}/allocate", base_url);
+        let allocate_response = match client
+            .post(&allocate_url)
+            .json(&json!({"filePath": server_path, "fileSize": 40 })) // Use the server_path here as well
+            .send()
+            .await
+        {
+            Ok(res) => res,
+            Err(e) => {
+                if e.is_timeout() {
+                    println!("Request timed out. Please try again.");
+                } else {
+                    println!("An error occurred: {}", e);
+                }
+                return Err(e);
             }
-            return Err(e);
-        }
-    };
+        };
 
-    // Decode the JSON response
-    let allocation_data: AllocationResponse = match allocate_response.json().await {
-        Ok(data) => data,
-        Err(e) => {
-            println!("Failed to decode response: {}", e);
-            return Err(e);
-        }
-    };
+        // Decode the JSON response
+        let allocation_data: AllocationResponse = match allocate_response.json().await {
+            Ok(data) => data,
+            Err(e) => {
+                println!("Failed to decode response: {}", e);
+                return Err(e);
+            }
+        };
 
-    // Process the block assignments
-    for block_assignment in allocation_data.block_assignments {
-        println!("Block ID: {}", block_assignment.block_id);
-        for address in block_assignment.datanode_addresses {
-            println!("  Data Node Address: {}", address);
+        // Process the block assignments
+        for block_assignment in allocation_data.block_assignments {
+            println!("Block ID: {}", block_assignment.block_id);
+            for address in block_assignment.datanode_addresses {
+                println!("  Data Node Address: {}", address);
+            }
         }
+        process_file_in_blocks(local_path, &allocation_data.block_assignments);
     }
     Ok(())
 }
