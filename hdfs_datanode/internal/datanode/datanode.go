@@ -3,14 +3,18 @@ package datanode
 import (
 	"log"
 	"net"
+	"net/http"
 	"time"
 
 	"google.golang.org/grpc"
 
 	"github.com/aarrasseayoub01/namenode/datanode/internal/config"
+	ctrl "github.com/aarrasseayoub01/namenode/datanode/internal/controller"
 	datamgmt "github.com/aarrasseayoub01/namenode/datanode/internal/datamngnt"
+	mng "github.com/aarrasseayoub01/namenode/datanode/internal/datamngnt" // Replace with your actual project path
 	gRPC "github.com/aarrasseayoub01/namenode/datanode/internal/gRPC"
 	"github.com/aarrasseayoub01/namenode/protobuf"
+	"github.com/gorilla/mux"
 )
 
 type DataNode struct {
@@ -33,10 +37,23 @@ func NewDataNode(cfg *config.Config) (*DataNode, error) {
 
 func (dn *DataNode) Start() error {
 
+	r := mux.NewRouter()
+
+	// Initialize DataManager
+	dataManager := mng.NewDataManager("./") // Set the base directory path
+
+	// Create a new Controller instance
+	controller := ctrl.NewController(dataManager)
+	// Define the routes
+	r.HandleFunc("/addBlock", controller.AddBlock).Methods("POST")
+
+	// Start the server
+	log.Println("Starting server on :8080")
+	log.Fatal(http.ListenAndServe(":8080", r))
 	// Start the DataNode functionality
 	go dn.startGRPCclient()
 
-	startGRPCserver()
+	go startGRPCserver()
 
 	log.Printf("Starting DataNode on %s", dn.config.DataNodeAddress)
 	// Add more startup logic here
@@ -57,7 +74,7 @@ func (dn *DataNode) startGRPCclient() error {
 		log.Fatalf("Failed to register with NameNode: %v", err)
 	}
 
-	go func(id string) {
+	go func(address string) {
 		ticker := time.NewTicker(30 * time.Second) // Adjust the interval as needed
 		nameNodeAddress := "localhost:50051"       // Adjust the address of the NameNode
 		client, err := gRPC.NewDataNodeClient(nameNodeAddress)
@@ -67,7 +84,7 @@ func (dn *DataNode) startGRPCclient() error {
 		defer client.Close()
 
 		for range ticker.C {
-			err := client.SendHeartbeat(id) // Use a unique identifier for the DataNode
+			err := client.SendHeartbeat(address) // Use a unique identifier for the DataNode
 			if err != nil {
 				log.Printf("Error sending heartbeat: %v", err)
 				// Handle error, maybe with a retry mechanism
