@@ -51,7 +51,7 @@ async fn send_block_to_datanode(
 
     let block_request = serde_json::json!({
         "blockId": block_id,
-        "data": base64::encode(data), // Encoding data to base64 string
+        "data": encode(data), // Encoding data to base64 string
     });
 
     client
@@ -62,4 +62,24 @@ async fn send_block_to_datanode(
         .error_for_status()?; // Checks for HTTP error status codes
 
     Ok(())
+}
+
+use reqwest;
+use std::error::Error;
+
+pub async fn retrieve_block_from_datanode(
+    block_id: &str,
+    datanode_address: &str,
+) -> Result<Vec<u8>, Box<dyn Error>> {
+    let url = format!("http://localhost:8081/getBlock/{}", block_id);
+
+    let response = reqwest::get(&url).await?;
+    let status = response.status();
+
+    if !status.is_success() {
+        return Err(format!("Failed to retrieve block: HTTP {}", status).into());
+    }
+
+    let data = response.bytes().await?.to_vec();
+    Ok(data)
 }

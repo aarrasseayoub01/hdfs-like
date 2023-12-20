@@ -19,7 +19,6 @@ type Directory struct {
 
 type File struct {
 	Inode Inode
-	// File-specific data
 }
 
 type Block struct {

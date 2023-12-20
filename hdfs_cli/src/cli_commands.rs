@@ -7,11 +7,12 @@ use crate::models::AllocationResponse;
 // use crate::models::BlockAssignment;
 use crate::models::FileData;
 use crate::utils::process_file_in_blocks;
+use crate::utils::retrieve_block_from_datanode;
 
 pub fn build_cli_app() -> App<'static> {
     App::new("Rust CLI for REST Requests")
         .version("1.0")
-        .author("Your Name")
+        .author("Ayoub")
         .about("Performs HTTP requests")
         .subcommand(
             SubCommand::with_name("create")
@@ -44,6 +45,16 @@ pub fn build_cli_app() -> App<'static> {
                         .short('d')
                         .long("directory")
                         .help("Read a directory instead of a file"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("get")
+                .about("Retrieves a file from the data nodes")
+                .arg(
+                    Arg::with_name("filepath")
+                        .help("The path of the file to retrieve")
+                        .required(true)
+                        .index(1),
                 ),
         )
 }
@@ -113,15 +124,6 @@ pub async fn handle_create_subcommand(
                 return Err(e);
             }
         };
-
-        // Process the block assignments
-        // for block_assignment in allocation_data.block_assignments {
-        //     println!("Block ID: {}", block_assignment.block_id);
-        //     for address in block_assignment.datanode_addresses {
-        //         println!("  Data Node Address: {}", address);
-        //     }
-        // }
-        // let block_assignments_clone = allocation_data.block_assignments.clone();
 
         process_file_in_blocks(local_path, &allocation_data.block_assignments).await;
     }
@@ -198,4 +200,40 @@ fn print_file_data_table(files: &[FileData]) {
     }
 
     table.printstd();
+}
+
+// In your cli_commands module
+
+pub async fn handle_get_subcommand(
+    filepath: &str,
+    client: &Client,
+    base_url: &str,
+) -> Result<(), reqwest::Error> {
+    // Step 1: Call the name node to get block assignments and data node addresses
+    // Assuming the endpoint is something like "/getFileBlocks?filePath={filepath}"
+    let url = format!("{}/getFileBlocks?filePath={}", base_url, filepath);
+    let response = client.get(&url).send().await?;
+    let allocation_data: AllocationResponse = response.json().await?;
+
+    // Step 2: Retrieve each block from its respective data node
+    let mut file_data = Vec::new();
+    for block_assignment in allocation_data.block_assignments {
+        if let Some(datanode_address) = block_assignment.datanode_addresses.get(0) {
+            match retrieve_block_from_datanode(&block_assignment.block_id, datanode_address).await {
+                Ok(block_data) => {
+                    println!("Retrieved block data: {:?}", block_data);
+                    file_data.extend(block_data);
+                }
+                Err(e) => {
+                    println!("Error retrieving block: {}", e);
+                    continue;
+                }
+            }
+        }
+    }
+
+    // Step 3: Write the gathered data to a file
+    std::fs::write(filepath, file_data);
+
+    Ok(())
 }

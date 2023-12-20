@@ -12,8 +12,8 @@ var (
 
 func init() {
 	lastCheckpointTime = time.Now()
-	editLogSizeThreshold = 2           // for example, trigger after 1000 operations
-	checkpointInterval = 1 * time.Hour // for example, trigger at least every hour
+	editLogSizeThreshold = 2
+	checkpointInterval = 1 * time.Minute
 }
 
 func shouldTriggerCheckpoint() bool {
