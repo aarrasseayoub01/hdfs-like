@@ -16,7 +16,7 @@ pub struct FileData {
     pub timestamp: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BlockAssignment {
     #[serde(rename = "blockId")]
     pub block_id: String,

@@ -86,7 +86,7 @@ pub async fn handle_create_subcommand(
         "Response from {} endpoint: {}",
         endpoint, create_response_text
     );
-    if is_directory {
+    if !is_directory {
         let allocate_url = format!("{}/allocate", base_url);
         let allocate_response = match client
             .post(&allocate_url)
@@ -115,13 +115,15 @@ pub async fn handle_create_subcommand(
         };
 
         // Process the block assignments
-        for block_assignment in allocation_data.block_assignments {
-            println!("Block ID: {}", block_assignment.block_id);
-            for address in block_assignment.datanode_addresses {
-                println!("  Data Node Address: {}", address);
-            }
-        }
-        process_file_in_blocks(local_path, &allocation_data.block_assignments);
+        // for block_assignment in allocation_data.block_assignments {
+        //     println!("Block ID: {}", block_assignment.block_id);
+        //     for address in block_assignment.datanode_addresses {
+        //         println!("  Data Node Address: {}", address);
+        //     }
+        // }
+        // let block_assignments_clone = allocation_data.block_assignments.clone();
+
+        process_file_in_blocks(local_path, &allocation_data.block_assignments).await;
     }
     Ok(())
 }

@@ -5,7 +5,7 @@ const BLOCK_SIZE: u64 = 64 * 1024 * 1024; // 64 MB
 
 pub async fn process_file_in_blocks(
     local_path: &str,
-    block_assignments: &[BlockAssignment],
+    block_assignments: &Vec<BlockAssignment>,
 ) -> io::Result<()> {
     let mut file = File::open(local_path)?;
 
@@ -31,7 +31,8 @@ pub async fn process_file_in_blocks(
 
         // Send the block to the data node
         if let Some(datanode_address) = block_assignment.datanode_addresses.get(0) {
-            send_block_to_datanode(&block_assignment.block_id, datanode_address, &buffer).await?;
+            // send_block_to_datanode(&block_assignment.block_id, datanode_address, &buffer).await?;
+            println!("{}", datanode_address)
         }
     }
 
