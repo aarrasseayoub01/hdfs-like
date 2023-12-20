@@ -29,16 +29,40 @@ func (c *FileSystemController) CreateFileHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	err := c.Service.CreateFile(request.FilePath)
+	fileInode, err := c.Service.CreateFile(request.FilePath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(fileInode); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (c *FileSystemController) ReadFileHandler(w http.ResponseWriter, r *http.Request) {
+
+	// file, err := os.Open("../../cmd/server/fsimage.gob")
+	// if err != nil {
+	// 	fmt.Println("Error opening file:", err)
+	// 	return
+	// }
+	// defer file.Close()
+
+	// // Create a decoder
+	// decoder := gob.NewDecoder(file)
+
+	// // Decode the data
+	// var data fs.Directory
+	// err = decoder.Decode(&data)
+	// if err != nil {
+	// 	fmt.Println("Error decoding GOB data:", err)
+	// 	return
+	// }
+
+	// // Use the data
+	// fmt.Println("Decoded data:", data)
 	// Parse the query from URL
 	query := r.URL.RawQuery
 
@@ -84,13 +108,16 @@ func (c *FileSystemController) CreateDirectoryHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	err := c.Service.CreateDirectory(request.DirPath)
+	inode, err := c.Service.CreateDirectory(request.DirPath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(inode); err != nil {
+		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
+	}
 }
 func (c *FileSystemController) ReadDirectoryHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the query from URL

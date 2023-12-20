@@ -22,16 +22,16 @@ func NewFileSystemService(root *utils.Directory) *FileSystemService {
 }
 
 // CreateFile creates a new file in the file system.
-func (fs *FileSystemService) CreateFile(filePath string) error {
+func (fs *FileSystemService) CreateFile(filePath string) (*utils.Inode, error) {
 	fs.rootMutex.Lock()
 	defer fs.rootMutex.Unlock()
 	dirPath, fileName := filepath.Split(filePath)
 	parentDir := utils.FindDirectory(fs.rootDirectory, dirPath)
 	if parentDir == nil {
-		return fmt.Errorf("parent directory does not exist")
+		return nil, fmt.Errorf("parent directory does not exist")
 	}
 	if _, exists := parentDir.ChildFiles[fileName]; exists {
-		return fmt.Errorf("file already exists")
+		return nil, fmt.Errorf("file already exists")
 	}
 
 	newFileInode := &utils.Inode{
@@ -44,7 +44,7 @@ func (fs *FileSystemService) CreateFile(filePath string) error {
 	parentDir.ChildFiles[fileName] = newFileInode
 	persistence.RecordEditLog("CREATE_FILE", filePath, newFileInode)
 
-	return nil
+	return newFileInode, nil
 }
 
 // ReadFile reads a file in the file system.
@@ -85,16 +85,16 @@ func (fs *FileSystemService) DeleteFile(filePath string) error {
 }
 
 // CreateDirectory creates a new directory in the file system.
-func (fs *FileSystemService) CreateDirectory(dirPath string) error {
+func (fs *FileSystemService) CreateDirectory(dirPath string) (*utils.Inode, error) {
 	fs.rootMutex.Lock()
 	defer fs.rootMutex.Unlock()
 	parentPath, dirName := filepath.Dir(dirPath), filepath.Base(dirPath)
 	parentDir := utils.FindDirectory(fs.rootDirectory, parentPath)
 	if parentDir == nil {
-		return fmt.Errorf("No parent path provided " + parentPath)
+		return nil, fmt.Errorf("No parent path provided " + parentPath)
 	}
 	if _, exists := parentDir.ChildDirs[dirName]; exists {
-		return fmt.Errorf("directory already exists")
+		return nil, fmt.Errorf("directory already exists")
 	}
 
 	newDirInode := &utils.Inode{
@@ -111,29 +111,31 @@ func (fs *FileSystemService) CreateDirectory(dirPath string) error {
 
 	persistence.RecordEditLog("CREATE_DIRECTORY", dirPath, newDirInode)
 
-	return nil
+	return newDirInode, nil
 }
 
 func (fs *FileSystemService) ReadDirectory(dirPath string) ([]*utils.Inode, error) {
 	fs.rootMutex.Lock()
 	defer fs.rootMutex.Unlock()
 
-	parentPath, dirName := filepath.Dir(dirPath), filepath.Base(dirPath)
+	// parentPath, dirName := filepath.Dir(dirPath), filepath.Base(dirPath)
 
 	// Find the parent directory
-	parentDir := utils.FindDirectory(fs.rootDirectory, parentPath)
-	if parentDir == nil {
-		return nil, fmt.Errorf("no parent path provided: %s", parentPath)
+	dir := utils.FindDirectory(fs.rootDirectory, dirPath)
+	fmt.Println(dirPath)
+	if dir == nil {
+		return nil, fmt.Errorf("no parent path provided: %s", dirPath)
 	}
 
-	// Check if the directory exists
-	dir, exists := parentDir.ChildDirs[dirName]
-	if !exists {
-		return nil, fmt.Errorf("directory does not exist: %s", dirPath)
-	}
+	// // Check if the directory exists
+	// dir, exists := parentDir.ChildDirs[dirName]
+	// if !exists {
+	// 	return nil, fmt.Errorf("directory does not exist: %s", dirPath)
+	// }
 
 	// Read child files and directories
 	childFiles := make([]*utils.Inode, 0, len(dir.ChildFiles))
+	fmt.Println(dirPath)
 	for _, inode := range dir.ChildFiles {
 		childFiles = append(childFiles, inode)
 	}
