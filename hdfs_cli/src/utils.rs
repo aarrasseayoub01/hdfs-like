@@ -47,7 +47,7 @@ async fn send_block_to_datanode(
     data: &[u8],
 ) -> Result<(), reqwest::Error> {
     let client = reqwest::Client::new();
-    let url = format!("{}/addBlock", datanode_address);
+    let url = format!("http://localhost:8081/addBlock");
 
     let block_request = serde_json::json!({
         "blockId": block_id,
