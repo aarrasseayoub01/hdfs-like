@@ -3,6 +3,8 @@ use prettytable::{color, row, Attr, Cell, Row, Table};
 use reqwest::Client;
 use serde_json::json;
 
+use crate::models::AllocationResponse;
+// use crate::models::BlockAssignment;
 use crate::models::FileData;
 
 pub fn build_cli_app() -> App<'static> {
@@ -84,13 +86,8 @@ pub async fn handle_create_subcommand(
         endpoint, create_response_text
     );
 
-    // Extract the file ID from the response, assuming it's returned as JSON
-    // let create_response_json: serde_json::Value = create_response.json().await?;
-    // let file_id = create_response_json["fileId"].as_str().unwrap_or_default(); // Adjust the key as needed
-
-    // Step 2: Call the allocate endpoint
-    let allocate_url = format!("{}/allocateFileBlocks", base_url);
-    match client
+    let allocate_url = format!("{}/allocate", base_url);
+    let allocate_response = match client
         .post(&allocate_url)
         .json(&json!({"filePath": server_path, "fileSize": 40 })) // Use the server_path here as well
         .send()
@@ -107,9 +104,22 @@ pub async fn handle_create_subcommand(
         }
     };
 
-    // Handle the allocate response as needed
-    // You can print the response or parse it depending on your requirements
+    // Decode the JSON response
+    let allocation_data: AllocationResponse = match allocate_response.json().await {
+        Ok(data) => data,
+        Err(e) => {
+            println!("Failed to decode response: {}", e);
+            return Err(e);
+        }
+    };
 
+    // Process the block assignments
+    for block_assignment in allocation_data.block_assignments {
+        println!("Block ID: {}", block_assignment.block_id);
+        for address in block_assignment.datanode_addresses {
+            println!("  Data Node Address: {}", address);
+        }
+    }
     Ok(())
 }
 
