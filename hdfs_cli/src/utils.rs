@@ -1,5 +1,7 @@
 use crate::models::BlockAssignment;
+use base64::encode;
 use std::fs::File;
+
 use std::io::{self, Read, Seek, SeekFrom};
 const BLOCK_SIZE: u64 = 64 * 1024 * 1024; // 64 MB
 
@@ -31,10 +33,33 @@ pub async fn process_file_in_blocks(
 
         // Send the block to the data node
         if let Some(datanode_address) = block_assignment.datanode_addresses.get(0) {
-            // send_block_to_datanode(&block_assignment.block_id, datanode_address, &buffer).await?;
-            println!("{}", datanode_address)
+            send_block_to_datanode(&block_assignment.block_id, datanode_address, &buffer).await;
+            // println!("{}", datanode_address)
         }
     }
+
+    Ok(())
+}
+
+async fn send_block_to_datanode(
+    block_id: &str,
+    datanode_address: &str,
+    data: &[u8],
+) -> Result<(), reqwest::Error> {
+    let client = reqwest::Client::new();
+    let url = format!("{}/addBlock", datanode_address);
+
+    let block_request = serde_json::json!({
+        "blockId": block_id,
+        "data": base64::encode(data), // Encoding data to base64 string
+    });
+
+    client
+        .post(&url)
+        .json(&block_request)
+        .send()
+        .await?
+        .error_for_status()?; // Checks for HTTP error status codes
 
     Ok(())
 }
