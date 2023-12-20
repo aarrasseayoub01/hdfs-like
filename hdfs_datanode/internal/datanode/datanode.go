@@ -46,10 +46,11 @@ func (dn *DataNode) Start() error {
 	controller := ctrl.NewController(dataManager)
 	// Define the routes
 	r.HandleFunc("/addBlock", controller.AddBlock).Methods("POST")
+	r.HandleFunc("/getBlock/{blockId}", controller.GetBlock).Methods("GET") // New route
 
 	// Start the server
-	log.Println("Starting server on :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Println("Starting server on :8081")
+	log.Fatal(http.ListenAndServe(":8081", r))
 	// Start the DataNode functionality
 	go dn.startGRPCclient()
 

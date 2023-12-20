@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"time"
 )
@@ -28,9 +29,15 @@ func NewDataManager(basePath string) *DataManager {
 	}
 }
 
-// StoreBlock stores a data block with the given ID and data
 func (dm *DataManager) StoreBlock(blockID string, data []byte) error {
+	// Ensure the data directory exists
+	if err := os.MkdirAll(dm.dataPath, 0755); err != nil {
+		return fmt.Errorf("failed to create data directory: %v", err)
+	}
+
 	blockPath := filepath.Join(dm.dataPath, blockPrefix+blockID)
+
+	// Write the data block in binary format
 	if err := ioutil.WriteFile(blockPath, data, 0644); err != nil {
 		return fmt.Errorf("failed to write data block: %v", err)
 	}
@@ -39,7 +46,7 @@ func (dm *DataManager) StoreBlock(blockID string, data []byte) error {
 	metadata := &BlockMetadata{
 		ID:        blockID,
 		Size:      int64(len(data)),
-		Checksum:  calculateChecksum(data), // Implement calculateChecksum to compute a checksum of the data
+		Checksum:  calculateChecksum(data),
 		CreatedAt: time.Now(),
 	}
 	if err := dm.SaveMetadata(metadata); err != nil {
