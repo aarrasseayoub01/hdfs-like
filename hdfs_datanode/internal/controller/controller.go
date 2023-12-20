@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	mng "github.com/aarrasseayoub01/namenode/datanode/internal/datamngnt" // Replace with your actual project path
+	"github.com/gorilla/mux"
 )
 
 // BlockRequest represents the request structure for adding a block
@@ -44,4 +45,22 @@ func (c *Controller) AddBlock(w http.ResponseWriter, r *http.Request) {
 	// Respond with success
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+}
+
+// getBlock handles GET requests to retrieve a block
+func (c *Controller) GetBlock(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	blockID := vars["blockId"]
+
+	// Retrieve the block using DataManager
+	data, err := c.DataManager.RetrieveBlock(blockID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Return the block data
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.WriteHeader(http.StatusOK)
+	w.Write(data)
 }
