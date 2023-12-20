@@ -13,7 +13,18 @@ pub fn build_cli_app() -> App<'static> {
         .subcommand(
             SubCommand::with_name("create")
                 .about("Creates a file or directory with the specified path")
-                .arg(Arg::with_name("path").required(true).index(1))
+                .arg(
+                    Arg::with_name("local_path")
+                        .help("The local path of the file")
+                        .required(true)
+                        .index(1),
+                ) // First argument for 'create'
+                .arg(
+                    Arg::with_name("server_path")
+                        .help("The server path of the file")
+                        .required(true)
+                        .index(2),
+                ) // Second argument for 'create'
                 .arg(
                     Arg::with_name("directory")
                         .short('d')
@@ -35,24 +46,23 @@ pub fn build_cli_app() -> App<'static> {
 }
 
 pub async fn handle_create_subcommand(
-    create_matches: &ArgMatches,
+    local_path: &str,
+    server_path: &str,
     client: &Client,
     base_url: &str,
+    is_directory: bool, // New parameter to indicate directory option
 ) -> Result<(), reqwest::Error> {
-    let path = create_matches
-        .value_of("path")
-        .expect("Required argument missing: path");
-
-    let (endpoint, key) = if create_matches.is_present("directory") {
+    // Determine the endpoint and request body key based on is_directory
+    let (endpoint, key) = if is_directory {
         ("createDir", "dirPath")
     } else {
         ("createFile", "filePath")
     };
 
-    let post_body = json!({ key: path });
-
-    let url = format!("{}/{}", base_url, endpoint);
-    match client.post(&url).json(&post_body).send().await {
+    // Step 1: Create the file's or directory's metadata
+    let post_body = json!({ key: server_path });
+    let create_url = format!("{}/{}", base_url, endpoint);
+    let create_response = match client.post(&create_url).json(&post_body).send().await {
         Ok(res) => res,
         Err(e) => {
             if e.is_timeout() {
@@ -63,6 +73,43 @@ pub async fn handle_create_subcommand(
             return Err(e);
         }
     };
+
+    // Print the JSON response from the endpoint call
+    let create_response_text = create_response
+        .text()
+        .await
+        .expect("Failed to read response");
+    println!(
+        "Response from {} endpoint: {}",
+        endpoint, create_response_text
+    );
+
+    // Extract the file ID from the response, assuming it's returned as JSON
+    // let create_response_json: serde_json::Value = create_response.json().await?;
+    // let file_id = create_response_json["fileId"].as_str().unwrap_or_default(); // Adjust the key as needed
+
+    // Step 2: Call the allocate endpoint
+    let allocate_url = format!("{}/allocateFileBlocks", base_url);
+    match client
+        .post(&allocate_url)
+        .json(&json!({"filePath": server_path, "fileSize": 40 })) // Use the server_path here as well
+        .send()
+        .await
+    {
+        Ok(res) => res,
+        Err(e) => {
+            if e.is_timeout() {
+                println!("Request timed out. Please try again.");
+            } else {
+                println!("An error occurred: {}", e);
+            }
+            return Err(e);
+        }
+    };
+
+    // Handle the allocate response as needed
+    // You can print the response or parse it depending on your requirements
+
     Ok(())
 }
 
@@ -95,7 +142,6 @@ pub async fn handle_read_subcommand(
     };
 
     let response_text = response.text().await.expect("Failed to read response");
-
     if read_matches.is_present("directory") {
         let files: Vec<FileData> = serde_json::from_str(&response_text)
             .expect("Failed to parse JSON as a list of FileData");
