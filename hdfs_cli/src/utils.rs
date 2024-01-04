@@ -1,6 +1,10 @@
 use crate::models::BlockAssignment;
-use base64::encode;
+use base64;
+use core::num;
+use std::env;
 use std::fs::File;
+use std::path::Path;
+use std::path::PathBuf;
 
 use std::io::{self, Read, Seek, SeekFrom};
 const BLOCK_SIZE: u64 = 64 * 1024 * 1024; // 64 MB
@@ -9,7 +13,7 @@ pub async fn process_file_in_blocks(
     local_path: &str,
     block_assignments: &Vec<BlockAssignment>,
 ) -> io::Result<()> {
-    let mut file = File::open(local_path)?;
+    let mut file = File::open(Path::new(&get_current_working_dir()).join(local_path))?;
 
     let file_size = file.metadata()?.len();
     let num_blocks = (file_size + BLOCK_SIZE - 1) / BLOCK_SIZE;
@@ -51,7 +55,7 @@ async fn send_block_to_datanode(
 
     let block_request = serde_json::json!({
         "blockId": block_id,
-        "data": encode(data), // Encoding data to base64 string
+        "data": base64::encode(data),
     });
 
     client
@@ -59,7 +63,7 @@ async fn send_block_to_datanode(
         .json(&block_request)
         .send()
         .await?
-        .error_for_status()?; // Checks for HTTP error status codes
+        .error_for_status()?;
 
     Ok(())
 }
@@ -82,4 +86,12 @@ pub async fn retrieve_block_from_datanode(
 
     let data = response.bytes().await?.to_vec();
     Ok(data)
+}
+
+fn get_current_working_dir() -> String {
+    let res = env::current_dir();
+    match res {
+        Ok(path) => path.into_os_string().into_string().unwrap(),
+        Err(_) => "FAILED".to_string(),
+    }
 }
