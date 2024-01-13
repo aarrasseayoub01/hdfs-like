@@ -7,7 +7,6 @@ use serde_json::json;
 use crate::errors::MyError;
 use crate::models::FileData;
 use crate::utils::process_file_in_blocks;
-use crate::utils::retrieve_block_from_datanode;
 
 pub fn build_cli_app() -> App<'static> {
     App::new("Rust CLI for REST Requests")
@@ -94,7 +93,7 @@ pub async fn handle_create_subcommand(
 
         match serde_json::from_str::<FileData>(&response_text) {
             Ok(allocation_data) => {
-                process_file_in_blocks(local_path, &allocation_data.blocks).await
+                let _ = process_file_in_blocks(local_path, &allocation_data.blocks).await;
             }
             Err(e) => {
                 println!("Failed to parse response: {}", e);
@@ -159,7 +158,6 @@ pub async fn handle_read_subcommand(
     };
 
     let response_text = response.text().await.expect("Failed to read response");
-    print!("{}", response_text);
     if read_matches.is_present("directory") {
         let files: Vec<FileData> = serde_json::from_str(&response_text)
             .expect("Failed to parse JSON as a list of FileData");

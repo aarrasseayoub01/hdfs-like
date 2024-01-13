@@ -34,7 +34,7 @@ async fn main() {
     } else if let Some(("read", read_matches)) = matches.subcommand() {
         let _ = cli_commands::handle_read_subcommand(read_matches, &client, base_url).await;
     } else if let Some(("get", get_matches)) = matches.subcommand() {
-        let filepath = get_matches
+        get_matches
             .value_of("filepath")
             .expect("Required argument missing: filepath");
 

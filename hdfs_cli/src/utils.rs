@@ -6,7 +6,7 @@ use std::env;
 use std::fs::File;
 use std::path::Path;
 
-use std::io::{self, Read, Seek, SeekFrom};
+use std::io::{Read, Seek, SeekFrom};
 const BLOCK_SIZE: u64 = 64 * 1024 * 1024; // 64 MB
 
 pub async fn process_file_in_blocks(
@@ -55,7 +55,7 @@ pub async fn process_file_in_blocks(
 }
 async fn send_block_to_datanode(
     block_id: &str,
-    datanode_address: &str,
+    _datanode_address: &str,
     data: &[u8],
 ) -> Result<(), reqwest::Error> {
     let client = reqwest::Client::new();
@@ -81,7 +81,7 @@ use std::error::Error;
 
 pub async fn retrieve_block_from_datanode(
     block_id: &str,
-    datanode_address: &str,
+    _datanode_address: &str,
 ) -> Result<Vec<u8>, Box<dyn Error>> {
     let url = format!("http://localhost:8081/getBlock/{}", block_id);
     print!("{}", url);
