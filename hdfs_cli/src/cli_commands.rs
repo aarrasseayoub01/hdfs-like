@@ -159,6 +159,7 @@ pub async fn handle_read_subcommand(
     };
 
     let response_text = response.text().await.expect("Failed to read response");
+    print!("{}", response_text);
     if read_matches.is_present("directory") {
         let files: Vec<FileData> = serde_json::from_str(&response_text)
             .expect("Failed to parse JSON as a list of FileData");

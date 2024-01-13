@@ -101,6 +101,7 @@ func (fs *FileSystemService) CreateDirectory(dirPath string) (*utils.Inode, erro
 		ID:        utils.GenerateInodeID(),
 		Name:      dirName,
 		IsDir:     true,
+		Blocks:    []utils.BlockAssignment{},
 		Timestamp: time.Now(),
 	}
 	parentDir.ChildDirs[dirName] = &utils.Directory{
