@@ -17,6 +17,7 @@ type EditLogEntry struct {
 	Action    string
 	Inode     *fs.Inode
 	Path      string
+	Blocks    *fs.AllocateFileBlocksResponse
 }
 
 const editLogFileName = "editlog.json"

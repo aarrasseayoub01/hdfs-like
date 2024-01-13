@@ -37,6 +37,11 @@ func NewDataNode(cfg *config.Config) (*DataNode, error) {
 
 func (dn *DataNode) Start() error {
 
+	// Start the DataNode functionality
+	go dn.startGRPCclient()
+
+	go startGRPCserver()
+
 	r := mux.NewRouter()
 
 	// Initialize DataManager
@@ -49,14 +54,9 @@ func (dn *DataNode) Start() error {
 	r.HandleFunc("/getBlock/{blockId}", controller.GetBlock).Methods("GET") // New route
 
 	// Start the server
-	log.Println("Starting server on :8081")
+	log.Println("Starting DataNode server on :8081")
 	log.Fatal(http.ListenAndServe(":8081", r))
-	// Start the DataNode functionality
-	go dn.startGRPCclient()
 
-	go startGRPCserver()
-
-	log.Printf("Starting DataNode on %s", dn.config.DataNodeAddress)
 	// Add more startup logic here
 	return nil
 }
@@ -104,7 +104,7 @@ func startGRPCserver() {
 
 	grpcServer := grpc.NewServer()
 	protobuf.RegisterNameNodeServiceServer(grpcServer, gRPC.NewDataNodeServer())
-	log.Println("Starting gRPC server on :50051")
+	log.Println("Starting gRPC server on :50052")
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}

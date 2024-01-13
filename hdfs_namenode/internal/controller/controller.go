@@ -23,13 +23,15 @@ func NewFileSystemController(rootDir *utils.Directory) *FileSystemController {
 func (c *FileSystemController) CreateFileHandler(w http.ResponseWriter, r *http.Request) {
 	var request struct {
 		FilePath string `json:"filePath"`
+		FileSize int64  `json:"fileSize"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	fileInode, err := c.Service.CreateFile(request.FilePath)
+	fileInode, err := c.Service.CreateFile(request.FilePath, request.FileSize)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -157,24 +159,35 @@ func (c *FileSystemController) DeleteDirectoryHandler(w http.ResponseWriter, r *
 	w.WriteHeader(http.StatusOK)
 }
 
-func (c *FileSystemController) AllocateFileBlocksHandler(w http.ResponseWriter, r *http.Request) {
-	var request utils.AllocateFileBlocksRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-	// Call the service layer to get block assignments
-	allocateFileBlocks, err := c.Service.AllocateFileBlocks(request.FilePath, request.FileSize)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error allocating file blocks: %v", err), http.StatusInternalServerError)
-		return
-	}
+// func (c *FileSystemController) AllocateFileBlocksHandler(w http.ResponseWriter, r *http.Request) {
+// 	var request utils.AllocateFileBlocksRequest
+// 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+// 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+// 		return
+// 	}
+// 	// Call the service layer to get block assignments
+// 	allocateFileBlocks, err := c.Service.AllocateFileBlocks(request.FilePath, request.FileSize)
+// 	if err != nil {
+// 		http.Error(w, fmt.Sprintf("Error allocating file blocks: %v", err), http.StatusInternalServerError)
+// 		return
+// 	}
 
-	// Respond with the block assignments
-	response := utils.AllocateFileBlocksResponse{BlockAssignments: allocateFileBlocks.BlockAssignments}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
-	}
-}
+// 	// Respond with the block assignments
+// 	response := utils.AllocateFileBlocksResponse{BlockAssignments: allocateFileBlocks.BlockAssignments}
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(http.StatusOK)
+// 	if err := json.NewEncoder(w).Encode(response); err != nil {
+// 		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
+// 	}
+// }
+// func (c *FileSystemController) GetFileBlocks(w http.ResponseWriter, r *http.Request) {
+// 	// Parse the query from URL
+// 	query := r.URL.RawQuery
+
+// 	// Read Directory
+// 	filePath, err := c.Service.ReadDirectory(strings.Split(query, "=")[1])
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// }

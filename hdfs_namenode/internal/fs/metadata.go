@@ -7,7 +7,7 @@ type Inode struct {
 	Name      string
 	IsDir     bool
 	Size      int64
-	Blocks    []int64
+	Blocks    []BlockAssignment
 	Timestamp time.Time
 }
 

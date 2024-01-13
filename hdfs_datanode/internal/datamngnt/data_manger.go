@@ -37,8 +37,7 @@ func (dm *DataManager) StoreBlock(blockID string, data []byte) error {
 
 	blockPath := filepath.Join(dm.dataPath, blockPrefix+blockID)
 
-	// Write the data block in binary format
-	if err := ioutil.WriteFile(blockPath, data, 0644); err != nil {
+	if err := os.WriteFile(blockPath, data, 0644); err != nil {
 		return fmt.Errorf("failed to write data block: %v", err)
 	}
 

@@ -34,7 +34,6 @@ func (c *Controller) AddBlock(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 	// Store the block using DataManager
 	err = c.DataManager.StoreBlock(blockReq.BlockID, blockReq.Data)
 	if err != nil {

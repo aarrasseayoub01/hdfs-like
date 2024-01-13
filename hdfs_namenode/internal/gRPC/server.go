@@ -77,16 +77,11 @@ func (s *NameNodeServer) RegisterDataNode(ctx context.Context, req *protobuf.Reg
 func (s *NameNodeServer) SendHeartbeat(ctx context.Context, req *protobuf.HeartbeatRequest) (*protobuf.HeartbeatResponse, error) {
 	address := req.GetDatanodeAddress()
 
-	log.Printf("Received heartbeat from DataNode: %s", address)
-
 	dataNodeManager := GetInstance()
 	dataNodes := dataNodeManager.GetDataNodes()
 
 	// Check if the DataNode exists in the manager
 	if dataNode, exists := dataNodes[address]; exists {
-		// Update the existing DataNode record with new heartbeat information
-		// This could include updating a timestamp, status, etc.
-		// Note: Ensure thread-safe updating if necessary
 		log.Printf("Heartbeat received from known DataNode: %s", dataNode.Address)
 	} else {
 		// Optionally handle the case where a heartbeat is received from an unknown DataNode

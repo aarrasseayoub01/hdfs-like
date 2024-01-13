@@ -2,6 +2,7 @@ hdfs_namenode/cmd/server/editlog.json
 hdfs_namenode/cmd/server/fsimage.gob
 hdfs_namenode/cmd/server/server.exe
 hdfs_datanode/cmd/datanode/datanode.exe
+hdfs_datanode/cmd/datanode/data
 
 hdfs_namenode/test/editlog.json
 hdfs_namenode/test/fsimage.gob

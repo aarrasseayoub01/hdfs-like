@@ -22,30 +22,30 @@ func NewFileSystemService(root *utils.Directory) *FileSystemService {
 }
 
 // CreateFile creates a new file in the file system.
-func (fs *FileSystemService) CreateFile(filePath string) (*utils.Inode, error) {
-	fs.rootMutex.Lock()
-	defer fs.rootMutex.Unlock()
-	dirPath, fileName := filepath.Split(filePath)
-	parentDir := utils.FindDirectory(fs.rootDirectory, dirPath)
-	if parentDir == nil {
-		return nil, fmt.Errorf("parent directory does not exist")
-	}
-	if _, exists := parentDir.ChildFiles[fileName]; exists {
-		return nil, fmt.Errorf("file already exists")
-	}
+// func (fs *FileSystemService) CreateFile(filePath string) (*utils.Inode, error) {
+// 	fs.rootMutex.Lock()
+// 	defer fs.rootMutex.Unlock()
+// 	dirPath, fileName := filepath.Split(filePath)
+// 	parentDir := utils.FindDirectory(fs.rootDirectory, dirPath)
+// 	if parentDir == nil {
+// 		return nil, fmt.Errorf("parent directory does not exist")
+// 	}
+// 	if _, exists := parentDir.ChildFiles[fileName]; exists {
+// 		return nil, fmt.Errorf("file already exists")
+// 	}
 
-	newFileInode := &utils.Inode{
-		ID:        utils.GenerateInodeID(),
-		Name:      fileName,
-		IsDir:     false,
-		Size:      0, // Size could be set appropriately
-		Timestamp: time.Now(),
-	}
-	parentDir.ChildFiles[fileName] = newFileInode
-	persistence.RecordEditLog("CREATE_FILE", filePath, newFileInode)
+// 	newFileInode := &utils.Inode{
+// 		ID:        utils.GenerateInodeID(),
+// 		Name:      fileName,
+// 		IsDir:     false,
+// 		Size:      0,
+// 		Timestamp: time.Now(),
+// 	}
+// 	parentDir.ChildFiles[fileName] = newFileInode
+// 	persistence.RecordEditLog("CREATE_FILE", filePath, newFileInode, blocks)
 
-	return newFileInode, nil
-}
+// 	return newFileInode, nil
+// }
 
 // ReadFile reads a file in the file system.
 func (fs *FileSystemService) ReadFile(filePath string) (*utils.Inode, error) {
@@ -170,7 +170,7 @@ func (fs *FileSystemService) DeleteDirectory(dirPath string) error {
 	return nil
 }
 
-func (fs *FileSystemService) AllocateFileBlocks(filePath string, fileSize int64) (*utils.AllocateFileBlocksResponse, error) {
+func (fs *FileSystemService) CreateFile(filePath string, fileSize int64) (*utils.Inode, error) {
 	const blockSize int64 = 64 * 1024 * 1024
 	var blockAssignments []utils.BlockAssignment
 
@@ -203,6 +203,27 @@ func (fs *FileSystemService) AllocateFileBlocks(filePath string, fileSize int64)
 		})
 	}
 
-	return &utils.AllocateFileBlocksResponse{BlockAssignments: blockAssignments}, nil
+	dirPath, fileName := filepath.Split(filePath)
+	parentDir := utils.FindDirectory(fs.rootDirectory, dirPath)
+	if parentDir == nil {
+		return nil, fmt.Errorf("parent directory does not exist")
+	}
+	if _, exists := parentDir.ChildFiles[fileName]; exists {
+		return nil, fmt.Errorf("file already exists")
+	}
+
+	newFileInode := &utils.Inode{
+		ID:        utils.GenerateInodeID(),
+		Name:      fileName,
+		IsDir:     false,
+		Size:      fileSize,
+		Blocks:    utils.AllocateFileBlocksResponse{BlockAssignments: blockAssignments}.BlockAssignments,
+		Timestamp: time.Now(),
+	}
+	parentDir.ChildFiles[fileName] = newFileInode
+	persistence.RecordEditLog("CREATE_FILE", filePath, newFileInode)
+
+	// return &utils.AllocateFileBlocksResponse{BlockAssignments: blockAssignments}, nil
+	return newFileInode, nil
 
 }

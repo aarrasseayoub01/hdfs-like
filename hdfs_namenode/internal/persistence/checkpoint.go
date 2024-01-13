@@ -12,7 +12,7 @@ var (
 
 func init() {
 	lastCheckpointTime = time.Now()
-	editLogSizeThreshold = 2
+	editLogSizeThreshold = 3
 	checkpointInterval = 1 * time.Minute
 }
 

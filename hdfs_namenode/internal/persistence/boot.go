@@ -29,7 +29,7 @@ func InitializeFileSystem() *fs.Directory {
 				Name:      "/",
 				IsDir:     true,
 				Size:      0,
-				Blocks:    []int64{},
+				Blocks:    nil,
 				Timestamp: time.Now(),
 			},
 			ChildFiles: make(map[string]*fs.Inode),

@@ -1,6 +1,7 @@
 use tokio;
 
 mod cli_commands;
+mod errors;
 mod http_client;
 mod models;
 mod utils;
@@ -37,7 +38,7 @@ async fn main() {
             .value_of("filepath")
             .expect("Required argument missing: filepath");
 
-        let _ = cli_commands::handle_get_subcommand(filepath, &client, base_url).await;
+        // let _ = cli_commands::handle_get_subcommand(filepath, &client, base_url).await;
     } else {
         println!("Invalid command");
     }

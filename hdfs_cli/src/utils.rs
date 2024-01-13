@@ -17,7 +17,6 @@ pub async fn process_file_in_blocks(
 
     let file_size = file.metadata()?.len();
     let num_blocks = (file_size + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
     for (block_num, block_assignment) in block_assignments
         .iter()
         .enumerate()
@@ -76,7 +75,7 @@ pub async fn retrieve_block_from_datanode(
     datanode_address: &str,
 ) -> Result<Vec<u8>, Box<dyn Error>> {
     let url = format!("http://localhost:8081/getBlock/{}", block_id);
-
+    print!("{}", url);
     let response = reqwest::get(&url).await?;
     let status = response.status();
 

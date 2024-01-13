@@ -11,7 +11,7 @@ pub struct FileData {
     #[serde(rename = "Size")]
     pub size: u64,
     #[serde(rename = "Blocks")]
-    pub blocks: Option<Vec<u64>>,
+    pub blocks: Vec<BlockAssignment>,
     #[serde(rename = "Timestamp")]
     pub timestamp: String,
 }
@@ -24,8 +24,8 @@ pub struct BlockAssignment {
     pub datanode_addresses: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct AllocationResponse {
-    #[serde(rename = "blockAssignments")]
-    pub block_assignments: Vec<BlockAssignment>,
-}
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct AllocationResponse {
+//     #[serde(rename = "Blocks")]
+//     pub block_assignments: Vec<BlockAssignment>,
+// }
