@@ -2,7 +2,7 @@ module github.com/aarrasseayoub01/namenode/namenode
 
 replace github.com/aarrasseayoub01/namenode/protobuf/hdfs => ../protobuf
 
-go 1.21.1
+go 1.21
 
 require (
 	github.com/aarrasseayoub01/namenode/protobuf/hdfs v0.0.0-00010101000000-000000000000
